@@ -8,6 +8,7 @@ import Navigation from './components/Navigation/Navigation';
 import Rank from './components/Rank/Rank';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition';
 import SignIn from './components/SignIn/SignIn';
+import Register from './components/Register/Register';
 
 const app = new Clarifai.App({
   apiKey: '18d353e4cf5542faadc251390856ff8f',
@@ -30,6 +31,7 @@ const App = () => {
   const [imageUrl, setImageUrl] = useState('');
   const [box, setBox] = useState({});
   const [route, setRoute] = useState('signin');
+  const [isSignedIn, setIsSignedIn] = useState(false);
 
   const onInputChange = (e) => {
     setInput(e.target.value);
@@ -65,16 +67,19 @@ const App = () => {
   };
 
   const onRouteChange = (route) => {
+    if (route === 'signout') {
+      setIsSignedIn(false);
+    } else if (route === 'home') {
+      setIsSignedIn(true);
+    }
     setRoute(route);
   };
 
   return (
     <div className="App">
       <Particles params={particlesOption} className="particles" />
-      <Navigation onRouteChange={onRouteChange} />
-      {route === 'signin' ? (
-        <SignIn onRouteChange={onRouteChange} />
-      ) : (
+      <Navigation onRouteChange={onRouteChange} isSignedIn={isSignedIn} />
+      {route === 'home' ? (
         <>
           <Logo />
           <Rank />
@@ -84,6 +89,10 @@ const App = () => {
           />
           <FaceRecognition imageUrl={imageUrl} box={box} />
         </>
+      ) : route === 'signin' ? (
+        <SignIn onRouteChange={onRouteChange} />
+      ) : (
+        <Register onRouteChange={onRouteChange} />
       )}
     </div>
   );
