@@ -32,6 +32,7 @@ const App = () => {
   const [box, setBox] = useState({});
   const [route, setRoute] = useState('signin');
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [user, setUser] = useState({});
 
   const onInputChange = (e) => {
     setInput(e.target.value);
@@ -49,6 +50,7 @@ const App = () => {
       bottomRow: height - clarifaiFace.bottom_row * height,
     };
   };
+
   const displayFaceBox = (box) => {
     setBox(box);
     console.log(box);
@@ -59,13 +61,28 @@ const App = () => {
     app.models
       .predict('a403429f2ddf4b49b307e318f00e528b', input)
       .then((response) => {
+        if (response) {
+          fetch('http://localhost:5000/image', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id: user.id,
+            }),
+          })
+            .then((response) => response.json())
+            .then((count) => {
+              if (count) {
+                setUser({ ...user, entries: count });
+              }
+            });
+        }
         displayFaceBox(calculateFaceLocation(response));
       })
       .catch((error) => {
         console.log(error);
       });
   };
-
+  console.log(user);
   const onRouteChange = (route) => {
     if (route === 'signout') {
       setIsSignedIn(false);
@@ -75,6 +92,10 @@ const App = () => {
     setRoute(route);
   };
 
+  const loadUser = (user) => {
+    setUser(user);
+  };
+
   return (
     <div className="App">
       <Particles params={particlesOption} className="particles" />
@@ -82,7 +103,7 @@ const App = () => {
       {route === 'home' ? (
         <>
           <Logo />
-          <Rank />
+          <Rank name={user?.name} entries={user?.entries} />
           <ImageLinkForm
             onInputChange={onInputChange}
             onButtonSubmit={onSubmit}
@@ -92,7 +113,7 @@ const App = () => {
       ) : route === 'signin' ? (
         <SignIn onRouteChange={onRouteChange} />
       ) : (
-        <Register onRouteChange={onRouteChange} />
+        <Register onRouteChange={onRouteChange} loadUser={loadUser} />
       )}
     </div>
   );

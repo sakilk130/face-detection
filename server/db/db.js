@@ -1,6 +1,6 @@
 exports.users = [
   {
-    id: 123,
+    id: '123',
     name: 'John',
     email: 'john@gmail.com',
     password: '123456',
@@ -9,7 +9,7 @@ exports.users = [
   },
 
   {
-    id: 321,
+    id: '321',
     name: 'sally',
     email: 'sally@gmail.com',
     password: '654321',
