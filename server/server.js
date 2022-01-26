@@ -1,64 +1,91 @@
 const express = require('express');
 const cors = require('cors');
-
+const knex = require('knex');
+const bcrypt = require('bcryptjs');
 const app = express();
-const { users } = require('./db/db');
+
+const db = knex({
+  client: 'pg',
+  connection: {
+    host: 'localhost',
+    user: 'postgres',
+    password: 'root',
+    database: 'facedetection',
+  },
+});
 
 app.use(express.json());
 app.use(cors());
-app.get('/', (req, res) => {
-  res.json(users);
-});
 
-app.post('/signin', (req, res) => {
-  if (
-    req.body.email === users[0].email &&
-    req.body.password === users[0].password
-  ) {
-    res.json('success');
-  } else {
+app.post('/signin', async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await db.select('*').from('login').where('email', email);
+    if (user.length === 0) {
+      return res.status(400).json('error logging in');
+    }
+    const isMatchPassword = bcrypt.compare(password, user[0].hash);
+    if (!isMatchPassword) {
+      return res.status(400).json('error logging in');
+    }
+    const findUser = await db.select('*').from('users').where('email', email);
+    return res.json(findUser[0]);
+  } catch (error) {
     res.status(400).json('error logging in');
   }
 });
 
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
-  users.push({
-    id: users[users.length - 1].id + 1,
-    name,
-    email,
-    password,
-    entries: 0,
-    joined: new Date(),
-  });
-  res.json(users[users.length - 1]);
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await db.transaction(async (trx) => {
+      const loginEmail = await trx('login').insert(
+        {
+          hash: hashedPassword,
+          email: email,
+        },
+        'email'
+      );
+      const user = await trx('users')
+        .insert({
+          name,
+          email: loginEmail[0],
+          entries: 0,
+          joined: new Date(),
+        })
+        .returning('*');
+      return res.json(user[0]);
+    });
+  } catch (error) {
+    res.status(400).json('unable to register');
+  }
 });
 
-app.get('/profile/:id', (req, res) => {
+app.get('/profile/:id', async (req, res) => {
   const { id } = req.params;
-  users.map((user) => {
-    if (user.id === id) {
-      return res.json(user);
-    } else {
+  try {
+    const user = await db.select('*').from('users').where('id', id);
+    if (user.length === 0) {
       return res.status(404).json('no such user');
     }
-  });
+    res.json(user[0]);
+  } catch (error) {
+    return res.status(404).json('no such user');
+  }
 });
 
-app.put('/image', (req, res) => {
+app.put('/image', async (req, res) => {
   const { id } = req.body;
-  let find = false;
+  try {
+    const entries = await db('users')
+      .where('id', '=', id)
+      .increment('entries', 1)
+      .returning('entries');
 
-  users.map((user) => {
-    if (user.id == id) {
-      user.entries++;
-      find = true;
-      return res.json(user.entries);
-    }
-  });
-
-  if (!find) {
-    return res.status(400).json('not found');
+    res.json(entries[0]);
+  } catch (error) {
+    return res.status(400).json('unable to get entries');
   }
 });
 

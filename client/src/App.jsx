@@ -82,7 +82,7 @@ const App = () => {
         console.log(error);
       });
   };
-  console.log(user);
+
   const onRouteChange = (route) => {
     if (route === 'signout') {
       setIsSignedIn(false);

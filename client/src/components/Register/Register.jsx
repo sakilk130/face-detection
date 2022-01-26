@@ -17,6 +17,7 @@ const Register = ({ onRouteChange, loadUser }) => {
     })
       .then((response) => response.json())
       .then((user) => {
+        console.log(user);
         if (user) {
           loadUser(user);
           onRouteChange('home');
