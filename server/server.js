@@ -1,17 +1,24 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const knex = require('knex');
 const bcrypt = require('bcryptjs');
+const Clarifai = require('clarifai');
 const app = express();
+const PORT = process.env.PORT || 5000;
 
 const db = knex({
   client: 'pg',
   connection: {
-    host: 'localhost',
-    user: 'postgres',
-    password: 'root',
-    database: 'facedetection',
+    host: process.env.HOST,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
   },
+});
+
+const appClarifai = new Clarifai.App({
+  apiKey: process.env.API_KEY,
 });
 
 app.use(express.json());
@@ -37,6 +44,9 @@ app.post('/signin', async (req, res) => {
 
 app.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
+  if (!email || !name || !password) {
+    return res.status(400).json('incorrect form submission');
+  }
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     await db.transaction(async (trx) => {
@@ -75,6 +85,15 @@ app.get('/profile/:id', async (req, res) => {
   }
 });
 
+app.post('/imageurl', (req, res) => {
+  appClarifai.models
+    .predict('a403429f2ddf4b49b307e318f00e528b', req.body.input)
+    .then((data) => {
+      res.json(data);
+    })
+    .catch((err) => res.status(400).json('unable to work with API'));
+});
+
 app.put('/image', async (req, res) => {
   const { id } = req.body;
   try {
@@ -89,6 +108,6 @@ app.put('/image', async (req, res) => {
   }
 });
 
-app.listen(5000, () => {
-  console.log('server is running on 5000 port');
+app.listen(PORT, () => {
+  console.log(`server is running on ${PORT} port`);
 });

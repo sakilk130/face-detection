@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
 import Particles from 'react-particles-js';
-import Clarifai from 'clarifai';
 import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm';
 import Logo from './components/Logo/Logo';
 import Navigation from './components/Navigation/Navigation';
@@ -9,10 +8,6 @@ import Rank from './components/Rank/Rank';
 import FaceRecognition from './components/FaceRecognition/FaceRecognition';
 import SignIn from './components/SignIn/SignIn';
 import Register from './components/Register/Register';
-
-const app = new Clarifai.App({
-  apiKey: process.env.REACT_APP_API_KEY,
-});
 
 const particlesOption = {
   particles: {
@@ -26,13 +21,22 @@ const particlesOption = {
   },
 };
 
+const initialState = {
+  input: '',
+  imageUrl: '',
+  box: {},
+  route: 'signin',
+  isSignedIn: false,
+  user: {},
+};
+
 const App = () => {
-  const [input, setInput] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
-  const [box, setBox] = useState({});
-  const [route, setRoute] = useState('signin');
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [user, setUser] = useState({});
+  const [input, setInput] = useState(initialState.input);
+  const [imageUrl, setImageUrl] = useState(initialState.imageUrl);
+  const [box, setBox] = useState(initialState.box);
+  const [route, setRoute] = useState(initialState.route);
+  const [isSignedIn, setIsSignedIn] = useState(initialState.isSignedIn);
+  const [user, setUser] = useState(initialState.user);
 
   const onInputChange = (e) => {
     setInput(e.target.value);
@@ -53,13 +57,18 @@ const App = () => {
 
   const displayFaceBox = (box) => {
     setBox(box);
-    console.log(box);
   };
 
   const onSubmit = () => {
     setImageUrl(input);
-    app.models
-      .predict('a403429f2ddf4b49b307e318f00e528b', input)
+    fetch('http://localhost:5000/imageurl', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        input,
+      }),
+    })
+      .then((response) => response.json())
       .then((response) => {
         if (response) {
           fetch('http://localhost:5000/image', {
@@ -74,6 +83,9 @@ const App = () => {
               if (count) {
                 setUser({ ...user, entries: count });
               }
+            })
+            .catch((error) => {
+              console.log(error);
             });
         }
         displayFaceBox(calculateFaceLocation(response));
@@ -85,7 +97,7 @@ const App = () => {
 
   const onRouteChange = (route) => {
     if (route === 'signout') {
-      setIsSignedIn(false);
+      setIsSignedIn(initialState.route);
     } else if (route === 'home') {
       setIsSignedIn(true);
     }

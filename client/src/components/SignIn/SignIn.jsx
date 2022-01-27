@@ -5,6 +5,7 @@ const SignIn = ({ onRouteChange }) => {
   const [password, setPassword] = useState('');
 
   const onSubmitSignIn = () => {
+    console.log({ email, password });
     fetch('http://localhost:5000/signin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

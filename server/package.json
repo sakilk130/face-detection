@@ -13,7 +13,9 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.1",
+    "clarifai": "^2.9.1",
     "cors": "^2.8.5",
+    "dotenv": "^14.3.2",
     "express": "^4.17.2",
     "knex": "^0.21.1",
     "pg": "^8.0.3"
