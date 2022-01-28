@@ -6,10 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "tsc -w",
-    "dev:3": "nodemon dist/server.js",
-    "start": "nodemon server.js",
-    "dev": "ts-node server.ts",
-    "dev:2": "ts-node-dev --respawn server.ts"
+    "dev": "nodemon dist/server.js",
+    "start": "node dist/server.js"
   },
   "keywords": [],
   "author": "",
