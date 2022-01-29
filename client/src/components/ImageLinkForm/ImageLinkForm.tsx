@@ -1,7 +1,12 @@
 import React from 'react';
 import './ImageLinkForm.css';
 
-const ImageLinkForm = ({ onInputChange, onButtonSubmit }) => {
+interface Props {
+  onInputChange: React.ChangeEventHandler<HTMLInputElement>;
+  onButtonSubmit: React.MouseEventHandler<HTMLButtonElement>;
+}
+
+const ImageLinkForm: React.FC<Props> = ({ onInputChange, onButtonSubmit }) => {
   return (
     <div>
       <p className="f3 ">

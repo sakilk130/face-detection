@@ -2,7 +2,7 @@ import React from 'react';
 import Tilt from 'react-tilt';
 import './Logo.css';
 
-const Logo = () => {
+const Logo: React.FC = () => {
   return (
     <div className="ma4 mt0">
       <Tilt

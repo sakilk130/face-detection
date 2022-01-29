@@ -1,28 +1,40 @@
 import React, { useState } from 'react';
+import { User } from '../../App';
 
-const Register = ({ onRouteChange, loadUser }) => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+interface Props {
+  onRouteChange: (route: string) => void;
+  loadUser: (user: User) => void;
+}
 
-  const onSubmitRegister = () => {
-    fetch('http://localhost:5000/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        email,
-        password,
-      }),
-    })
-      .then((response) => response.json())
-      .then((user) => {
-        if (user.id) {
-          loadUser(user);
-          onRouteChange('home');
-        }
+const Register: React.FC<Props> = ({ onRouteChange, loadUser }) => {
+  const [name, setName] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<boolean>(false);
+
+  const onSubmitRegister = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+        }),
       });
+      const data: User = await response.json();
+      if (data.id) {
+        loadUser(data);
+        onRouteChange('home');
+      } else {
+        setError(true);
+      }
+    } catch (error: any) {
+      setError(true);
+    }
   };
+
   return (
     <article className="br3 ba dark-gray b--black-10 mv4 w-100 w-50-m w-25-l mw6 shadow-5 center">
       <main className="pa4 black-80">
@@ -66,6 +78,14 @@ const Register = ({ onRouteChange, loadUser }) => {
               />
             </div>
           </fieldset>
+          {error && (
+            <>
+              <label className="db fw6 lh-copy f6" style={{ color: 'red' }}>
+                Register Failed!
+              </label>
+              <br />
+            </>
+          )}
           <div className="">
             <input
               onClick={onSubmitRegister}
