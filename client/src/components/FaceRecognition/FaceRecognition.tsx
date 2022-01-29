@@ -1,7 +1,13 @@
 import React from 'react';
+import { Box } from '../../App';
 import './FaceRecognition.css';
 
-function FaceRecognition({ imageUrl, box }) {
+interface Props {
+  imageUrl: string;
+  box: Box;
+}
+
+const FaceRecognition: React.FC<Props> = ({ imageUrl, box }) => {
   return (
     <div className="center ma">
       <div className="absolute mt2">
@@ -24,6 +30,6 @@ function FaceRecognition({ imageUrl, box }) {
       </div>
     </div>
   );
-}
+};
 
 export default FaceRecognition;

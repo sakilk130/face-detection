@@ -1,25 +1,36 @@
 import React, { useState } from 'react';
+import { User } from '../../App';
 
-const SignIn = ({ onRouteChange }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+interface Props {
+  onRouteChange: (route: string) => void;
+  loadUser: (user: User) => void;
+}
 
-  const onSubmitSignIn = () => {
-    console.log({ email, password });
-    fetch('http://localhost:5000/signin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.id) {
-          onRouteChange('home');
-        }
+const SignIn: React.FC<Props> = ({ onRouteChange, loadUser }) => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<boolean>(false);
+
+  const onSubmitSignIn = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       });
+      const data: User = await response.json();
+      if (data.id) {
+        loadUser(data);
+        onRouteChange('home');
+      } else {
+        setError(true);
+      }
+    } catch (error: any) {
+      setError(true);
+    }
   };
 
   return (
@@ -37,7 +48,9 @@ const SignIn = ({ onRouteChange }) => {
                 type="email"
                 name="email"
                 id="email-address"
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setEmail(e.target.value)
+                }
               />
             </div>
             <div className="mv3">
@@ -49,10 +62,25 @@ const SignIn = ({ onRouteChange }) => {
                 type="password"
                 name="password"
                 id="password"
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setPassword(e.target.value)
+                }
               />
             </div>
           </fieldset>
+          {error && (
+            <div className="red">
+              <p>
+                Incorrect email or password. Please try again or
+                <span
+                  className="link dim black underline pointer"
+                  onClick={() => onRouteChange('register')}
+                >
+                  register
+                </span>
+              </p>
+            </div>
+          )}
           <div className="">
             <input
               onClick={onSubmitSignIn}

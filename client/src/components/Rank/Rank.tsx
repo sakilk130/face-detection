@@ -1,6 +1,9 @@
 import React from 'react';
-
-const Rank = ({ name, entries }) => {
+interface Props {
+  name: string;
+  entries: number;
+}
+const Rank: React.FC<Props> = ({ name, entries }) => {
   return (
     <div>
       <div className="white f3">{name}, your current entry count is...</div>

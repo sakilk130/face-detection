@@ -1,6 +1,10 @@
 import React from 'react';
+interface Props {
+  onRouteChange: (route: string) => void;
+  isSignedIn: boolean;
+}
 
-const Navigation = ({ onRouteChange, isSignedIn }) => {
+const Navigation: React.FC<Props> = ({ onRouteChange, isSignedIn }) => {
   if (isSignedIn) {
     return (
       <nav style={{ display: 'flex', justifyContent: 'flex-end' }}>

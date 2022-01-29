@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import './App.css';
 import Particles from 'react-particles-js';
 import ImageLinkForm from './components/ImageLinkForm/ImageLinkForm';
@@ -20,33 +20,68 @@ const particlesOption = {
     },
   },
 };
+export interface User {
+  id: number;
+  email: string;
+  name: string;
+  entries: number;
+  joined: Date;
+}
 
-const initialState = {
+interface InitialStateTypes {
+  input: string;
+  imageUrl: string;
+  box: any;
+  route: string;
+  isSignedIn: boolean;
+  user: User;
+}
+
+export interface Box {
+  topRow: number;
+  rightCol: number;
+  bottomRow: number;
+  leftCol: number;
+}
+
+const initialState: InitialStateTypes = {
   input: '',
   imageUrl: '',
   box: {},
   route: 'signin',
   isSignedIn: false,
-  user: {},
+  user: {
+    id: 0,
+    name: '',
+    email: '',
+    entries: 0,
+    joined: new Date(),
+  },
 };
 
-const App = () => {
+const App: React.FC = () => {
   const [input, setInput] = useState(initialState.input);
   const [imageUrl, setImageUrl] = useState(initialState.imageUrl);
   const [box, setBox] = useState(initialState.box);
   const [route, setRoute] = useState(initialState.route);
-  const [isSignedIn, setIsSignedIn] = useState(initialState.isSignedIn);
+  const [isSignedIn, setIsSignedIn] = useState<boolean>(
+    initialState.isSignedIn
+  );
   const [user, setUser] = useState(initialState.user);
 
-  const onInputChange = (e) => {
+  const onInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
-  const calculateFaceLocation = (data) => {
+
+  console.log(user);
+
+  const calculateFaceLocation = (data: any) => {
     const clarifaiFace =
       data.outputs[0].data.regions[0].region_info.bounding_box;
-    const image = document.getElementById('inputimage');
-    const width = Number(image.width);
-    const height = Number(image.height);
+    const image: any = document.getElementById('inputimage');
+    const width: number = Number(image.width);
+    const height: number = Number(image.height);
+
     return {
       leftCol: clarifaiFace.left_col * width,
       topRow: clarifaiFace.top_row * height,
@@ -55,7 +90,7 @@ const App = () => {
     };
   };
 
-  const displayFaceBox = (box) => {
+  const displayFaceBox = (box: Box) => {
     setBox(box);
   };
 
@@ -95,16 +130,16 @@ const App = () => {
       });
   };
 
-  const onRouteChange = (route) => {
+  const onRouteChange = (route: string) => {
     if (route === 'signout') {
-      setIsSignedIn(initialState.route);
+      setIsSignedIn(initialState.isSignedIn);
     } else if (route === 'home') {
       setIsSignedIn(true);
     }
     setRoute(route);
   };
 
-  const loadUser = (user) => {
+  const loadUser = (user: User) => {
     setUser(user);
   };
 
@@ -123,7 +158,7 @@ const App = () => {
           <FaceRecognition imageUrl={imageUrl} box={box} />
         </>
       ) : route === 'signin' ? (
-        <SignIn onRouteChange={onRouteChange} />
+        <SignIn onRouteChange={onRouteChange} loadUser={loadUser} />
       ) : (
         <Register onRouteChange={onRouteChange} loadUser={loadUser} />
       )}
